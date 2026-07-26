@@ -35,7 +35,7 @@ function LinkBtn({ href, label, color }) {
   )
 }
 
-export default function QuestionsView({ progress, onToggleSolved, onToggleRevision, onSignOut, userEmail }) {
+export default function QuestionsView({ progress, onToggleSolved, onToggleRevision }) {
   const [search, setSearch] = useState('')
   const [topicFilter, setTopicFilter] = useState('All')
   const [diffFilter, setDiffFilter] = useState('All')
@@ -67,11 +67,6 @@ export default function QuestionsView({ progress, onToggleSolved, onToggleRevisi
             </span>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-xs text-gray-500 hidden sm:inline">{userEmail}</span>
-            <button onClick={onSignOut}
-              className="text-xs text-gray-400 hover:text-white border border-[#30363D] px-3 py-1.5 rounded-md transition-colors">
-              Sign out
-            </button>
           </div>
         </div>
       </header>

@@ -22,29 +22,27 @@ function App() {
 
   // Load progress from Supabase when session starts
   useEffect(() => {
-    if (!session) { setLoading(false); return }
-
-    async function loadProgress() {
-      setLoading(true)
-      const { data, error } = await supabase
-        .from('progress')
-        .select('*')
-        .eq('user_id', session.user.id)
-
-      if (!error && data) {
-        const solved = {}
-        const revision = []
-        data.forEach(row => {
-          if (row.solved_at) solved[row.question_id] = row.solved_at
-          if (row.is_revision) revision.push(row.question_id)
-        })
-        setProgress({ solved, revision })
-      }
+  async function loadProgress() {
+    if (!session) {
       setLoading(false)
+      return
     }
-
-    loadProgress()
-  }, [session])
+    setLoading(true)
+    const { data, error } = await supabase
+      .from('progress').select('*').eq('user_id', session.user.id)
+    if (!error && data) {
+      const solved = {}
+      const revision = []
+      data.forEach(row => {
+        if (row.solved_at) solved[row.question_id] = row.solved_at
+        if (row.is_revision) revision.push(row.question_id)
+      })
+      setProgress({ solved, revision })
+    }
+    setLoading(false)
+  }
+  loadProgress()
+}, [session])
 
   async function onToggleSolved(questionId) {
     const isSolved = !!progress.solved[questionId]
