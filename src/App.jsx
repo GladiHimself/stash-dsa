@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from './lib/supabase'
 import AuthPage from './pages/AuthPage'
 import QuestionsView from './pages/QuestionsView'
+import Dashboard from './pages/Dashboard'
 
 const INITIAL_PROGRESS = { solved: {}, revision: [] }
 
@@ -142,8 +143,8 @@ function App() {
         />
       )}
       {view === 'dashboard' && (
-        <div className="p-6 text-gray-500">Dashboard coming Day 3</div>
-      )}
+        <Dashboard progress={progress} />
+    )}
     </div>
   )
 }
