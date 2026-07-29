@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { TOPICS, QUESTIONS } from '../data/questions'
 
 function ytUrl(title) {
@@ -18,7 +19,8 @@ function LinkBtn({ href, label, color }) {
   )
 }
 
-export default function RevisionQueue({ progress, onToggleSolved, onToggleRevision }) {
+export default function RevisionQueue({ progress, onToggleSolved, onToggleRevision, onSaveNote }) {
+  const [noteModal, setNoteModal] = useState(null)
   const revisionQuestions = QUESTIONS.filter(q => progress.revision.includes(q.id))
 
   if (revisionQuestions.length === 0) {
@@ -59,7 +61,7 @@ export default function RevisionQueue({ progress, onToggleSolved, onToggleRevisi
                 </button>
 
                 <div className="flex-1 min-w-0">
-                  <span className={'text-sm font-medium ' + (isSolved ? 'line-through text-gray-500' : 'text-gray-200')}>
+                  <span className={'text-sm font-medium truncate block ' + (isSolved ? 'line-through text-gray-500' : 'text-gray-200')}>
                     {q.title}
                   </span>
                 </div>
@@ -74,9 +76,11 @@ export default function RevisionQueue({ progress, onToggleSolved, onToggleRevisi
 
                 <div className="flex items-center gap-1.5 flex-shrink-0">
                   {isLC && <LinkBtn href={q.leetcode} label="LC" color="text-yellow-400 bg-yellow-400/10" />}
-                  <LinkBtn href={gfgUrl(q.title)} label="GFG" color="text-green-400 bg-green-400/10" />
                   <LinkBtn href={ytUrl(q.title)} label="YT" color="text-red-400 bg-red-400/10" />
-                  {topic && topic.tuf && <LinkBtn href={topic.tuf} label="TUF" color="text-blue-400 bg-blue-400/10" />}
+                  <span className="hidden sm:flex items-center gap-1.5">
+                    <LinkBtn href={gfgUrl(q.title)} label="GFG" color="text-green-400 bg-green-400/10" />
+                    {topic && topic.tuf && <LinkBtn href={topic.tuf} label="TUF" color="text-blue-400 bg-blue-400/10" />}
+                  </span>
                 </div>
 
                 <button onClick={() => onToggleRevision(q.id)}
@@ -84,11 +88,49 @@ export default function RevisionQueue({ progress, onToggleSolved, onToggleRevisi
                   title="Remove from revision">
                   ★
                 </button>
+
+                <button
+                  onClick={() => setNoteModal({ id: q.id, title: q.title, note: progress.notes?.[q.id] || '' })}
+                  className={'flex-shrink-0 text-sm transition-colors ' +
+                    (progress.notes?.[q.id] ? 'text-indigo-400' : 'text-gray-700 hover:text-indigo-400')}
+                  title="Notes">
+                  📝
+                </button>
               </div>
             )
           })}
         </div>
       </div>
+
+      {noteModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-4"
+          onClick={() => setNoteModal(null)}>
+          <div className="bg-[#161B22] border border-[#30363D] rounded-xl p-6 w-full max-w-md"
+            onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-sm font-semibold text-gray-200 mb-1">{noteModal.title}</h3>
+            <p className="text-xs text-gray-500 mb-3">Notes</p>
+            <textarea
+              autoFocus
+              rows={5}
+              value={noteModal.note}
+              onChange={(e) => setNoteModal((m) => ({ ...m, note: e.target.value }))}
+              placeholder="Write your notes here..."
+              className="w-full bg-[#0D1117] border border-[#30363D] rounded-lg px-3 py-2 text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:border-indigo-500 resize-none"
+            />
+            <div className="flex justify-end gap-2 mt-3">
+              <button onClick={() => setNoteModal(null)}
+                className="text-xs text-gray-500 hover:text-white px-3 py-1.5 border border-[#30363D] rounded-md transition-colors">
+                Cancel
+              </button>
+              <button
+                onClick={async () => { await onSaveNote(noteModal.id, noteModal.note); setNoteModal(null) }}
+                className="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-md transition-colors">
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
