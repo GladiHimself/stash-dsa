@@ -4,6 +4,7 @@ import AuthPage from "./pages/AuthPage";
 import QuestionsView from "./pages/QuestionsView";
 import Dashboard from "./pages/Dashboard";
 import RevisionQueue from "./pages/RevisionQueue";
+import Profile from "./pages/Profile";
 
 const INITIAL_PROGRESS = { solved: {}, revision: [], notes: {} };
 
@@ -108,32 +109,30 @@ function App() {
   }
 
   async function onSaveNote(questionId, note) {
-  const { data: existing } = await supabase
-    .from('progress')
-    .select('id')
-    .eq('user_id', session.user.id)
-    .eq('question_id', questionId)
-    .single()
+    const { data: existing } = await supabase
+      .from("progress")
+      .select("id")
+      .eq("user_id", session.user.id)
+      .eq("question_id", questionId)
+      .single();
 
-  if (existing) {
-    await supabase
-      .from('progress')
-      .update({ notes: note })
-      .eq('user_id', session.user.id)
-      .eq('question_id', questionId)
-  } else {
-    await supabase
-      .from('progress')
-      .insert({
+    if (existing) {
+      await supabase
+        .from("progress")
+        .update({ notes: note })
+        .eq("user_id", session.user.id)
+        .eq("question_id", questionId);
+    } else {
+      await supabase.from("progress").insert({
         user_id: session.user.id,
         question_id: questionId,
-        solved_at: new Date().toISOString().split('T')[0],
+        solved_at: new Date().toISOString().split("T")[0],
         notes: note,
-      })
-  }
+      });
+    }
 
-  setProgress(p => ({ ...p, notes: { ...p.notes, [questionId]: note } }))
-}
+    setProgress((p) => ({ ...p, notes: { ...p.notes, [questionId]: note } }));
+  }
 
   if (session === undefined || loading) {
     return (
@@ -149,7 +148,9 @@ function App() {
     <div className="min-h-screen bg-[#0D1117] text-white">
       {/* Header */}
       <header className="border-b border-[#30363D] px-6 py-4 flex items-center justify-between">
-        <h1 className="text-base sm:text-xl font-bold text-indigo-400">stashDSA 🔥</h1>
+        <h1 className="text-base sm:text-xl font-bold text-indigo-400">
+          stashDSA 🔥
+        </h1>
         <nav className="flex gap-4 overflow-x-auto">
           <button
             onClick={() => setView("questions")}
@@ -168,6 +169,12 @@ function App() {
             className={`text-sm font-medium transition-colors ${view === "revision" ? "text-white" : "text-gray-500 hover:text-gray-300"}`}
           >
             Revision ⭐
+          </button>
+          <button
+            onClick={() => setView("profile")}
+            className={`text-sm font-medium transition-colors ${view === "profile" ? "text-white" : "text-gray-500 hover:text-gray-300"}`}
+          >
+            Profile
           </button>
         </nav>
         <button
@@ -196,6 +203,7 @@ function App() {
           onSaveNote={onSaveNote}
         />
       )}
+      {view === "profile" && <Profile progress={progress} session={session} />}
     </div>
   );
 }

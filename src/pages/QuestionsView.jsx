@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TOPICS, QUESTIONS } from "../data/questions";
 
 function ytUrl(title) {
@@ -46,9 +46,27 @@ export default function QuestionsView({ progress, onToggleSolved, onToggleRevisi
   const [diffFilter, setDiffFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
   const [noteModal, setNoteModal] = useState(null);
+  const [activeId, setActiveId] = useState(null);
 
   const solvedCount = Object.keys(progress.solved).length;
   const total = QUESTIONS.length;
+
+  useEffect(() => {
+    function handleKey(e) {
+      if (!activeId) return;
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+      if (e.key === " ") { e.preventDefault(); onToggleSolved(activeId); }
+      if (e.key === "r" || e.key === "R") onToggleRevision(activeId);
+      if (e.key === "n" || e.key === "N") {
+        e.preventDefault();
+        const q = QUESTIONS.find(q => q.id === activeId);
+        if (q) setNoteModal({ id: q.id, title: q.title, note: progress.notes?.[q.id] || "" });
+      }
+      if (e.key === "Escape") setNoteModal(null);
+    }
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [activeId, progress, onToggleSolved, onToggleRevision]);
 
   const filtered = QUESTIONS.filter((q) => {
     if (search && !q.title.toLowerCase().includes(search.toLowerCase())) return false;
@@ -132,7 +150,10 @@ export default function QuestionsView({ progress, onToggleSolved, onToggleRevisi
           )}
         </div>
 
-        <div className="text-xs text-gray-500 mb-3">Showing {filtered.length} of {total}</div>
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-xs text-gray-500">Showing {filtered.length} of {total}</span>
+          <span className="text-xs text-gray-600 hidden sm:inline">Hover a row · Space = solved · R = revision · N = notes</span>
+        </div>
 
         {/* Question list */}
         <div className="bg-[#161B22] border border-[#30363D] rounded-xl overflow-hidden">
@@ -145,11 +166,16 @@ export default function QuestionsView({ progress, onToggleSolved, onToggleRevisi
                 const isRevision = progress.revision.includes(q.id);
                 const topic = TOPICS.find((t) => t.id === q.topic);
                 const isLC = q.leetcode && q.leetcode.includes("leetcode.com");
+                const isActive = activeId === q.id;
 
                 return (
                   <div
                     key={q.id}
-                    className={"flex items-center gap-2 px-3 py-3 hover:bg-[#1C2128] transition-colors " + (isSolved ? "opacity-60" : "")}
+                    onMouseEnter={() => setActiveId(q.id)}
+                    onMouseLeave={() => setActiveId(null)}
+                    className={"flex items-center gap-2 px-3 py-3 transition-colors " +
+                      (isActive ? "bg-[#1C2128]" : "hover:bg-[#1C2128]") +
+                      (isSolved ? " opacity-60" : "")}
                   >
                     {/* Checkbox */}
                     <button
@@ -181,7 +207,7 @@ export default function QuestionsView({ progress, onToggleSolved, onToggleRevisi
                       )}
                     </div>
 
-                    {/* Links — GFG + TUF hidden on mobile */}
+                    {/* Links */}
                     <div className="flex items-center gap-1.5 flex-shrink-0">
                       {isLC && <LinkBtn href={q.leetcode} label="LC" color="text-yellow-400 bg-yellow-400/10" />}
                       <LinkBtn href={ytUrl(q.title)} label="YT" color="text-red-400 bg-red-400/10" />
