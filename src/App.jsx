@@ -5,6 +5,7 @@ import QuestionsView from "./pages/QuestionsView";
 import Dashboard from "./pages/Dashboard";
 import RevisionQueue from "./pages/RevisionQueue";
 import Profile from "./pages/Profile";
+import Leaderboard from "./pages/Leaderboard";
 
 const INITIAL_PROGRESS = { solved: {}, revision: [], notes: {} };
 
@@ -176,6 +177,12 @@ function App() {
           >
             Profile
           </button>
+          <button
+            onClick={() => setView("leaderboard")}
+            className={`text-sm font-medium transition-colors ${view === "leaderboard" ? "text-white" : "text-gray-500 hover:text-gray-300"}`}
+          >
+            🏆
+          </button>
         </nav>
         <button
           onClick={() => supabase.auth.signOut()}
@@ -204,6 +211,7 @@ function App() {
         />
       )}
       {view === "profile" && <Profile progress={progress} session={session} />}
+      {view === "leaderboard" && <Leaderboard session={session} />}
     </div>
   );
 }
