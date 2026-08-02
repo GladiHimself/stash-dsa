@@ -55,33 +55,18 @@ function App() {
   }, [session]);
 
   async function onToggleSolved(questionId) {
-    const isSolved = !!progress.solved[questionId];
+    if (progress.solved[questionId]) return;
 
-    if (isSolved) {
-      // Remove solved
-      setProgress((p) => {
-        const newSolved = { ...p.solved };
-        delete newSolved[questionId];
-        return { ...p, solved: newSolved };
-      });
-      await supabase
-        .from("progress")
-        .update({ solved_at: null })
-        .eq("user_id", session.user.id)
-        .eq("question_id", questionId);
-    } else {
-      // Mark solved
-      const today = new Date().toISOString().split("T")[0];
-      setProgress((p) => ({
-        ...p,
-        solved: { ...p.solved, [questionId]: today },
-      }));
-      await supabase.from("progress").upsert({
-        user_id: session.user.id,
-        question_id: questionId,
-        solved_at: today,
-      });
-    }
+    const today = new Date().toISOString().split("T")[0];
+    setProgress((p) => ({
+      ...p,
+      solved: { ...p.solved, [questionId]: today },
+    }));
+    await supabase.from("progress").upsert({
+      user_id: session.user.id,
+      question_id: questionId,
+      solved_at: today,
+    });
   }
 
   async function onToggleRevision(questionId) {
