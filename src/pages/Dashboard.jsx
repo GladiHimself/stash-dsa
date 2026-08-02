@@ -1,4 +1,5 @@
 import { TOPICS, QUESTIONS } from '../data/questions'
+import DailyGoal from './DailyGoal'
 
 function getStreak(solved) {
   const dates = [...new Set(Object.values(solved))].sort()
@@ -109,6 +110,8 @@ export default function Dashboard({ progress }) {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
+      
+      <DailyGoal progress={progress} />
 
       {/* Stats row */}
       <div className="grid grid-cols-3 gap-4">
