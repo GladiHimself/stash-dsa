@@ -52,7 +52,7 @@ function App() {
       setLoading(false);
     }
     loadProgress();
-  }, [session]);
+  }, [session?.user?.id])
 
   async function onToggleSolved(questionId) {
     if (progress.solved[questionId]) return;
