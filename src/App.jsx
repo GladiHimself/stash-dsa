@@ -52,7 +52,7 @@ function App() {
       setLoading(false);
     }
     loadProgress();
-  }, [session?.user?.id])
+  }, [session?.user?.id]);
 
   async function onToggleSolved(questionId) {
     if (progress.solved[questionId]) return;
@@ -62,11 +62,14 @@ function App() {
       ...p,
       solved: { ...p.solved, [questionId]: today },
     }));
-    await supabase.from("progress").upsert({
-      user_id: session.user.id,
-      question_id: questionId,
-      solved_at: today,
-    });
+    await supabase.from("progress").upsert(
+      {
+        user_id: session.user.id,
+        question_id: questionId,
+        solved_at: today,
+      },
+      { onConflict: "user_id,question_id" }
+    );
   }
 
   async function onToggleRevision(questionId) {
@@ -84,13 +87,17 @@ function App() {
         .eq("question_id", questionId);
     } else {
       setProgress((p) => ({ ...p, revision: [...p.revision, questionId] }));
-      await supabase.from("progress").upsert({
-        user_id: session.user.id,
-        question_id: questionId,
-        solved_at:
-          progress.solved[questionId] || new Date().toISOString().split("T")[0],
-        is_revision: true,
-      });
+      await supabase.from("progress").upsert(
+        {
+          user_id: session.user.id,
+          question_id: questionId,
+          solved_at:
+            progress.solved[questionId] ||
+            new Date().toISOString().split("T")[0],
+          is_revision: true,
+        },
+        { onConflict: "user_id,question_id" }
+      );
     }
   }
 
